@@ -1,0 +1,834 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Slate – Lock in your Slate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* ===== Slate design tokens (read from the Figma variables) ===== */
+  --color-tokens-slate-00:#ffffff;
+  --color-tokens-slate-20:#e5e5e5;
+  --color-tokens-slate-30:#cfcfcf;
+  --color-tokens-slate-50:#a6a6a6;
+  --color-tokens-slate-60:#949494;
+  --primary-slate-10:#f9f9f9;
+  --primary-slate-60:#7d7d7d;
+  --primary-slate-90:#262626;
+  --primary-magma-60:#ff4f00;
+  --opacity-white-5:#ffffff0d;
+  --opacity-white-10:#ffffff1a;
+  --opacity-white-20:#ffffff33;
+  --opacity-white-50:#ffffff80;
+  --opacity-white-80:#ffffffcc;
+  --opacity-white-90:#ffffffe5;
+  --opacity-magma-10:rgba(255,79,0,.1);
+  --opacity-magma-20:rgba(255,79,0,.2);
+  --overlay-slate-30:#2626264d;
+  --buttons-accent-fill:#ff4f00;
+  --buttons-text-on-bright:#262626;
+  --warning-badge-bg:#4d370e;  --warning-contents:#feb52e;
+  --alert-blue-badge-bg:#173d5e; --alert-blue-contents:#62d2ff;
+  --success-badge-bg:#2d473d;  --success-contents:#22f3a0;
+  --buttons-disabled:#e5e5e5; --buttons-text-disabled:#b4b4b4;
+  --corner-m:10px; --corner-xl:18px; --corner-xxl:24px; --corner-full:99999px;
+  /* short aliases used in the rules below */
+  --bg:#121212; --nav:var(--primary-slate-90); --magma:var(--primary-magma-60);
+  --w5:var(--opacity-white-5); --w10:var(--opacity-white-10); --w20:var(--opacity-white-20); --w50:var(--opacity-white-50); --w80:var(--opacity-white-80);
+  --slate30:var(--color-tokens-slate-30); --slate20:var(--color-tokens-slate-20); --slate50:var(--color-tokens-slate-50); --slate60:var(--color-tokens-slate-60);
+  --magma10:var(--opacity-magma-10); --magma20:var(--opacity-magma-20);
+  --r-xl:var(--corner-xl); --r-m:var(--corner-m);
+  --ease:cubic-bezier(.22,1,.36,1);       /* smooth decel – used everywhere */
+  --spring:cubic-bezier(.34,1.56,.64,1);  /* subtle overshoot for pops */
+  --font:'Slate General','Archivo','Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{font-family:var(--font);background:#2b2b2b;color:#fff;display:grid;place-items:center;overflow:hidden;
+  background-image:radial-gradient(900px 600px at 50% 40%,rgba(255,79,0,.10),transparent 60%),linear-gradient(#2f2f2f,#262626)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+svg.i{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;display:block}
+:focus-visible{outline:2px solid #fff;outline-offset:2px;border-radius:8px}
+
+/* ---------- device ---------- */
+.device{position:relative;width:375px;height:min(812px,calc(100dvh - 32px));background:var(--bg);border-radius:38px;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 40px 80px rgba(0,0,0,.55),0 0 120px rgba(255,79,0,.08);isolation:isolate}
+.chrome{position:absolute;inset:0 0 auto 0;z-index:20;background:var(--nav)}
+.status{height:38px;background:var(--nav);display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 20px;font-size:16px;color:#f9f9f9}
+.status .sys{display:flex;gap:6px;align-items:center}
+.nav{height:56px;display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--nav)}
+.nav .btns{display:flex;gap:12px;align-items:center}
+.nav .btns svg{font-size:24px}
+.logo{width:32px;height:24px;display:block}
+.logo-fallback{font-weight:900;font-size:26px;font-stretch:125%;line-height:24px;font-style:italic}
+.stage{position:absolute;inset:94px 0 0 0;overflow:hidden}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;background:var(--bg);will-change:transform,opacity}
+.screen::-webkit-scrollbar{display:none}
+.pad{padding:16px 0 32px}
+
+/* ---------- type ---------- */
+.eyebrow{font-weight:600;font-size:14px;line-height:24px;opacity:.5;text-transform:uppercase}
+.h3{font-weight:900;font-stretch:112%;font-size:28px;line-height:32px;text-transform:uppercase}
+.h4{font-weight:900;font-stretch:112%;font-size:24px;line-height:28px;text-transform:uppercase}
+.h2{font-weight:900;font-stretch:112%;font-size:32px;line-height:32px;text-transform:uppercase}
+.b2{font-size:14px;line-height:20px}
+.copy{color:var(--color-tokens-slate-50);font-size:14px;line-height:20px}
+.demi{font-weight:600}
+
+/* ---------- stagger entrance ---------- */
+.screen.play [data-rise]{animation:rise .8s var(--ease) backwards;animation-delay:calc(var(--i,0)*70ms + 120ms)}
+@keyframes rise{from{opacity:0;transform:translate3d(0,22px,0)}to{opacity:1;transform:none}}
+.reveal{opacity:0;transform:translate3d(0,26px,0);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--d,0ms)}
+.reveal.in{opacity:1;transform:none}
+
+/* ---------- buttons ---------- */
+.btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 32px;border-radius:var(--r-m);font-weight:600;font-size:14px;line-height:20px;
+  position:relative;overflow:hidden;transition:transform .35s var(--ease),background-color .45s var(--ease),color .45s var(--ease),box-shadow .45s var(--ease)}
+.btn svg{font-size:16px;transition:transform .45s var(--ease)}
+.btn:active:not(:disabled){transform:scale(.965)}
+.btn-accent{background:var(--buttons-accent-fill);color:var(--buttons-text-on-bright);box-shadow:0 8px 24px -12px rgba(255,79,0,.3)}
+.btn-accent:hover:not(:disabled) svg{transform:translateX(5px)}
+.btn-accent:disabled{background:var(--buttons-disabled);color:var(--buttons-text-disabled);box-shadow:none;cursor:not-allowed}
+.btn-accent::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-120%);pointer-events:none}
+.btn.sheen::after{animation:sheen 1.1s var(--ease)}
+.btn.pop{animation:btnpop .6s var(--spring)}
+@keyframes sheen{to{transform:translateX(120%)}}
+@keyframes btnpop{0%{transform:scale(.96)}60%{transform:scale(1.025)}100%{transform:scale(1)}}
+.btn-dark{background:var(--nav);color:#fff}
+.btn-dark:hover{background:#303030}
+
+/* ---------- vehicles / images ---------- */
+.vimg{position:relative}
+.vimg img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.vimg.missing{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 120'%3E%3Cpath d='M20 88 30 64q4-10 16-12l64-4 30-26q6-4 14-4h66q12 0 18 10l8 20 30 6q10 2 12 12l2 22z' fill='%23595959'/%3E%3Ccircle cx='80' cy='90' r='20' fill='%23222'/%3E%3Ccircle cx='236' cy='90' r='20' fill='%23222'/%3E%3C/svg%3E") center/contain no-repeat;opacity:.55}
+
+/* ---------- intro ---------- */
+.intro{padding:32px 20px 20px;display:flex;flex-direction:column;justify-content:flex-start;gap:24px;min-height:100%;
+  background:#121212}
+.introgrid{position:absolute;left:0;top:-15.89px;width:100%;height:647px;object-fit:cover;max-width:none;pointer-events:none;z-index:0;opacity:.4;animation:gridpulse 7s ease-in-out infinite}
+@keyframes gridpulse{50%{opacity:.25}}
+.intro>*:not(.corners):not(.introgrid){position:relative;z-index:1}
+.vcard{position:relative;height:160.413px;width:100%;flex-shrink:0;perspective:900px;margin-top:64.3px}
+.vcard .hero{position:absolute;right:14.72px;top:calc(50% - 101.58px);width:321.718px;height:197.013px;overflow:hidden;
+  transform:translate3d(var(--tx,0px),var(--ty,0px),0) rotateY(var(--ry,0deg));transition:transform .5s var(--ease)}
+.vcard .hero .vimg{position:absolute;height:92.97%;left:-9.41%;top:3.52%;width:118.83%}
+.screen.play .vcard .hero{animation:drive 1.5s var(--ease) .25s both}
+@keyframes drive{0%{opacity:0;translate:-120% 0;filter:blur(8px)}55%{opacity:1;filter:blur(0)}100%{opacity:1;translate:0 0;filter:blur(0)}}
+.stepper{display:flex;flex-direction:column;gap:8px;margin-top:auto}
+.st-track{position:relative;height:14px;border-radius:1000px;background:var(--w10)}
+.st-fill{position:absolute;inset:0 auto 0 0;border-radius:100px;background:var(--magma);width:0;box-shadow:0 0 10px rgba(255,79,0,.2)}
+.st-dots{position:absolute;inset:0 3.5px;display:flex;justify-content:space-between;align-items:center}
+.st-dots i{width:8px;height:8px;border-radius:50%;background:#fff;transform:scale(0)}
+.screen.play .st-dots i{animation:dot .5s var(--spring) both;animation-delay:calc(var(--k)*260ms + 700ms)}
+@keyframes dot{to{transform:scale(1)}}
+.st-labels{position:relative;height:18px;font-weight:600;font-size:12px;line-height:18px;white-space:nowrap}
+.st-labels>span{position:absolute;top:0}
+.st-labels .off{color:var(--slate50)}
+.sp{display:none}
+
+/* ---------- progress header ---------- */
+.pbar{position:absolute;left:0;right:0;top:0;z-index:6;display:flex;align-items:center;gap:16px;box-sizing:content-box;height:24px;padding:16px 20px 0;background:transparent;opacity:0;pointer-events:none;transition:opacity .45s var(--ease),background-color .3s var(--ease)}
+.pbar.stuck{background:var(--bg)}
+.pbar.on{opacity:1;pointer-events:auto}
+.pspace{height:65px;flex-shrink:0}
+.pbar .count.tick{animation:cntUp .5s var(--ease)}
+@keyframes cntUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.pbar .back{width:15px;height:16px;display:grid;place-items:center;font-size:16px;transition:transform .35s var(--ease)}
+.pbar .back:hover{transform:translateX(-3px)}
+.pbar .back:active{transform:translateX(-6px) scale(.9)}
+.pbar .track{flex:1;height:7px;position:relative;overflow:hidden}
+.pbar .segs,.pbar .fill{position:absolute;left:1.3%;top:0;height:7px}
+.pbar .segs{width:97.4%;background:linear-gradient(90deg,var(--w20) 42.7%,transparent 42.7%) 0 0/1.25% 100% repeat-x}
+.pbar .fill i{position:absolute;left:0;top:0;height:100%;background:var(--buttons-accent-fill);
+  -webkit-mask:linear-gradient(90deg,#000 42.7%,transparent 42.7%) 0 0/1.25% 100% repeat-x;mask:linear-gradient(90deg,#000 42.7%,transparent 42.7%) 0 0/1.25% 100% repeat-x}
+.pbar .fill{width:0;overflow:hidden}
+.pbar .count{text-align:right;font-weight:600;font-size:12px;line-height:18px;white-space:nowrap}
+.head{padding:0 20px;display:flex;flex-direction:column;gap:12px;margin-bottom:25px}
+.head .link{text-decoration:underline;text-underline-position:from-font;cursor:pointer;color:var(--color-tokens-slate-50)}
+.section{padding:0 20px}
+
+/* ---------- body style cards ---------- */
+.cards{display:flex;flex-direction:column;gap:12px;padding:0 20px;margin-bottom:25px}
+.card{position:relative;border-radius:18px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.09);
+  transition:background-color .5s var(--ease),border-color .5s var(--ease),box-shadow .5s var(--ease),transform .35s var(--ease)}
+.card:active{transform:scale(.985)}
+.card.selected{background-color:rgba(34,14,6,.7);background-image:linear-gradient(155deg,rgba(255,100,40,.035),rgba(255,79,0,.015) 45%,transparent 100%);border-color:var(--magma);box-shadow:0 0 0 1px var(--magma)}
+.card-main{position:relative;height:176px}
+.card .veh{position:absolute;left:36px;top:-20px;width:256.4px;height:160.35px;transition:transform .7s var(--ease)}
+.card.selected .veh{transform:translateX(6px) scale(1.03)}
+.card .meta{position:absolute;left:19px;top:114px;width:155px}
+.card .meta b{display:block;font-weight:900;font-stretch:112%;font-size:16px;line-height:28px;text-transform:uppercase}
+.card .meta>span{display:block;font-weight:600;font-size:12px;line-height:18px;color:var(--color-tokens-slate-60,#949494)}
+.badge{position:absolute;right:14px;top:137px;display:flex;align-items:center;gap:5px;padding:2px 8px;border-radius:99px;background:rgba(255,255,255,.1);font-size:11px;line-height:1.5;color:rgba(255,255,255,.9);transition:background-color .4s var(--ease)}
+.badge svg{width:12px;height:12px;transition:transform .5s var(--ease)}
+.card.selected .badge{background:var(--magma20)}
+.card.open .badge svg{transform:rotate(180deg)}
+.det-wrap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .65s var(--ease)}
+.card.open .det-wrap{grid-template-rows:1fr}
+.det-wrap>div{overflow:hidden;min-height:0}
+.det{opacity:0;transform:translateY(-8px);transition:opacity .5s var(--ease) .1s,transform .6s var(--ease) .1s}
+.card.open .det{opacity:1;transform:none}
+.det .lbl{display:block;font-family:Inter,system-ui,sans-serif;font-weight:600;font-size:10px;line-height:14px;letter-spacing:2px;text-transform:uppercase;color:#fff}
+.det .spec{display:flex;border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+.det .spec>div{flex:1;padding:16px 20px;display:flex;flex-direction:column;gap:8px}
+.det .spec>div+div{border-left:1px solid rgba(255,255,255,.12)}
+.det .n{display:flex;align-items:center;gap:10px;font-weight:600;font-size:28px;line-height:32px;height:32px}
+.det .dots{display:flex;gap:3px}.det .dots i{width:8px;height:8px;border-radius:50%;background:#fff}.det .dots i.o{background:#b4b4b4;opacity:.2}
+.det .used{padding:16px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.det .thumbs{display:flex;overflow-x:auto;scrollbar-width:none;margin-left:-6px}
+.det .thumbs::-webkit-scrollbar{display:none}
+.det .thumbs .vimg{flex:none;width:96px;height:60px;margin-right:-4px}
+[data-screen="body"],[data-screen="ship"],[data-screen="month"]{display:flex;flex-direction:column}
+.screen>*{flex-shrink:0}
+.actions{position:sticky;bottom:0;z-index:5;margin-top:auto;padding:16px 20px calc(16px + env(safe-area-inset-bottom));background:transparent;border-top:1px solid transparent;transition:background-color .3s var(--ease),border-color .3s var(--ease)}
+.actions.stuck{background:var(--bg);border-top-color:var(--w10)}
+
+/* ---------- shipping ---------- */
+.zip{display:flex;align-items:center;gap:8px;height:62px;padding:0 14px;border-radius:var(--r-xl);background:var(--w5);border:1px solid var(--w10);transition:border-color .4s var(--ease),box-shadow .4s var(--ease)}
+.zip.editing{border-color:var(--w50);background:rgba(255,255,255,.08)}
+.zip.err{border-color:#ff6b6b;animation:shake .45s var(--ease)}
+@keyframes shake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.zip svg.pin{fill:var(--magma);stroke:none;font-size:20px;flex:0 0 auto}
+.zip .val{flex:1;font-size:16px;font-weight:400}
+.zip input{flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font:inherit;font-size:16px;font-weight:400;letter-spacing:.08em}
+.zip .chg{text-decoration:underline;font-size:16px;transition:opacity .3s}
+.zip .chg:hover{opacity:.7}
+.hint{font-size:12px;color:var(--slate50);margin-top:8px;height:16px;opacity:0;transition:opacity .3s}
+.zip.err+.hint{opacity:1;color:#ff8d8d}
+
+/* ---------- month ---------- */
+.months{display:flex;flex-direction:column;gap:14px;padding:0 20px;margin-bottom:12px}
+.month{display:flex;align-items:center;justify-content:space-between;gap:24px;height:62px;padding:14px;border-radius:var(--r-xl);background:var(--w5);border:1px solid var(--w10);backdrop-filter:blur(10px);font-size:16px;line-height:22px;text-align:left;width:100%;
+  transition:background-color .5s var(--ease),border-color .5s var(--ease),box-shadow .5s var(--ease),transform .35s var(--ease)}
+.month:hover{border-color:var(--w20);transform:translateX(3px)}
+.month:active{transform:scale(.985)}
+.month.selected{background:var(--magma10);border-color:var(--magma);box-shadow:0 0 0 1px var(--magma);transform:none}
+.pill{padding:2px 8px;border-radius:99px;font-size:11px;line-height:1.5;white-space:nowrap}
+.pill.y{background:var(--warning-badge-bg);color:var(--warning-contents)}.pill.b{background:var(--alert-blue-badge-bg);color:var(--alert-blue-contents)}.pill.g{background:var(--success-badge-bg);color:var(--success-contents)}
+.later{border-radius:var(--r-xl);background:var(--w5);border:1px solid var(--w10);padding:14px;transition:border-color .4s var(--ease),background-color .4s}
+.later:hover{border-color:var(--w20)}
+.later-head{display:flex;justify-content:space-between;align-items:center;width:100%;font-size:16px;line-height:22px;text-align:left}
+.later-head svg{font-size:14px;transition:transform .55s var(--ease)}
+.later.open .later-head svg{transform:rotate(180deg)}
+.later-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s var(--ease)}
+.later.open .later-body{grid-template-rows:1fr}
+.later-body>div{overflow:hidden;min-height:0}
+.later-inner{padding-top:24px;display:flex;flex-direction:column;gap:24px;opacity:0;transform:translateY(-8px);transition:opacity .5s var(--ease) .08s,transform .6s var(--ease) .08s}
+.later.open .later-inner{opacity:1;transform:none}
+.later-inner p{color:var(--color-tokens-slate-50)}
+.sel{position:relative;height:48px;border:.5px solid var(--w50);border-radius:8px;transition:border-color .3s}
+.sel:focus-within{border-color:#fff}
+.sel select{appearance:none;-webkit-appearance:none;width:100%;height:100%;background:none;border:0;outline:0;color:#fff;font:inherit;font-size:16px;padding:0 44px 0 16px;cursor:pointer}
+.sel select option{background:#262626;color:#fff}
+.sel svg{position:absolute;right:16px;top:16px;font-size:16px;pointer-events:none}
+
+/* ---------- done ---------- */
+.done{padding-top:16px;padding-bottom:60px}
+.done-hero{position:relative;padding:8px 20px 0;height:330px}
+.donegrid{position:absolute;left:0;top:-110px;width:100%;height:647px;object-fit:cover;max-width:none;pointer-events:none;z-index:-1;opacity:.4;animation:gridpulse 7s ease-in-out infinite;
+  -webkit-mask-image:linear-gradient(#000 60%,transparent 92%);mask-image:linear-gradient(#000 60%,transparent 92%)}
+.done-hero h1{position:relative;z-index:2;width:307px}
+.done-truck{position:absolute;left:-9.57px;top:85.25px;width:394.145px;height:246.463px;z-index:1}
+.screen.play .done-truck{animation:drive 1.6s var(--ease) .15s both}
+.done-body{padding:0 20px 0;display:flex;flex-direction:column;gap:19px}
+.sumcard{border-radius:18px;background:var(--w5);overflow:hidden}
+.sumcard .st{padding:20px 18px 8px;display:flex;flex-direction:column;gap:8px}
+.sumcard .st-labels{height:38px;white-space:normal}
+.sumcard .st-labels>span{text-align:center;line-height:16px;transform:translateX(-50%)}
+.sumcard .st-labels>span:first-child{transform:none}
+.sumcard .st-labels>span:last-child{transform:none}
+.rows{border-top:1px solid var(--w10)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;font-size:14px;line-height:20px;border-bottom:1px solid var(--w10)}
+.row:last-child{border-bottom:0}
+.row>span{color:var(--w80)}.row b{font-weight:600;display:flex;align-items:center;gap:2px}
+.row b svg{font-size:14px}
+.note{border-radius:var(--r-xl);background:var(--w5);padding:14px;display:flex;flex-direction:column;gap:4px;font-size:14px;line-height:20px}
+.note b{font-weight:900}.note>span{color:var(--color-tokens-slate-50)}
+.paras{display:flex;flex-direction:column;gap:8px}
+.block{padding:20px 16px;margin:0}
+.block+.block{margin:26px 2px 0}
+.block h2{margin-bottom:18px}
+.video{position:relative;aspect-ratio:250/140;border-radius:8px;overflow:hidden;cursor:pointer;background:#1c1c1c}
+.video>.vimg{position:absolute;inset:0;transition:transform 1.2s var(--ease),filter .6s}
+.video>.vimg img{object-fit:cover}
+.video:hover>.vimg{transform:scale(1.05)}
+.video.playing>.vimg{filter:brightness(.7)}
+.vplay{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:4px;background:var(--nav);border:1.5px solid var(--primary-slate-60);display:grid;place-items:center;transition:transform .4s var(--spring),background-color .3s}
+.vplay svg{font-size:24px;fill:#ff4f00;stroke:none;margin-left:2px}
+.video:hover .vplay{transform:scale(1.1)}
+.video:active .vplay{transform:scale(.94)}
+.vplay .pa{display:none}.video.playing .vplay .pl{display:none}.video.playing .vplay .pa{display:block;margin-left:0}
+.vplay::before{content:"";position:absolute;inset:-1.5px;border-radius:4px;border:1.5px solid var(--magma);opacity:0}
+.video:not(.playing) .vplay::before{animation:ring 2.2s var(--ease) infinite}
+@keyframes ring{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+.ts{position:absolute;right:0;bottom:0;height:26px;padding:4px 8px;border-radius:8px 0 0 0;background:var(--overlay-slate-30);display:flex;align-items:center;gap:6px;font-size:12px;line-height:18px;backdrop-filter:blur(4px)}
+.ts svg{font-size:10px;fill:#fff;stroke:none}
+.vprog{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--magma)}
+.steps{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.step{display:flex;gap:10px;align-items:flex-start;padding:14px;border-radius:var(--r-xl);background:var(--w5)}
+.step>b{font-weight:900;font-size:16px;line-height:22px}
+.step .tx{flex:1;display:flex;flex-direction:column;gap:12px}
+.step .tx h3{font-weight:900;font-size:16px;line-height:22px}
+.btn-sm{padding:8px 12px;font-size:12px;line-height:18px;gap:6px}.btn-sm svg{font-size:12px}
+.outline{width:100%;padding:4px 10px;border:1.5px solid #f9f9f9;border-radius:99px;font-size:14px;line-height:16px;color:#f9f9f9;transition:background-color .35s var(--ease),color .35s var(--ease),transform .35s var(--ease)}
+.outline:hover{background:#f9f9f9;color:var(--nav)}
+.outline:active{transform:scale(.97)}
+
+/* ---------- sheet + toast + confetti ---------- */
+.scrim{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .45s var(--ease)}
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:41;background:#1f1f1f;border-radius:24px 24px 0 0;padding:12px 20px 32px;transform:translateY(105%);transition:transform .65s var(--ease);box-shadow:0 -20px 60px rgba(0,0,0,.5)}
+.sheet .grab{width:40px;height:4px;border-radius:9px;background:var(--w20);margin:0 auto 18px}
+.sheet h3{font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:20px;line-height:24px;margin-bottom:10px}
+.sheet p{color:var(--slate30);font-size:14px;line-height:20px;margin-bottom:10px}
+.sheet .btn{margin-top:14px}
+.device.sheet-open .scrim{opacity:1;pointer-events:auto}
+.device.sheet-open .sheet{transform:none}
+.toast{position:absolute;left:20px;right:20px;bottom:22px;z-index:45;background:#fff;color:var(--nav);border-radius:12px;padding:12px 14px;font-size:13px;font-weight:600;transform:translateY(160%);opacity:0;transition:transform .6s var(--ease),opacity .4s;box-shadow:0 14px 40px rgba(0,0,0,.45)}
+.toast.show{transform:none;opacity:1}
+
+/* ---------- viewfinder corner accents ---------- */
+.corners{position:absolute;width:300.757px;pointer-events:none;z-index:3;transform-origin:center}
+.corners i{position:absolute;width:11.243px;height:11.243px}
+.corners i::before,.corners i::after{content:"";position:absolute;left:0;top:0;background:#ff5706}
+.corners i::before{width:11.243px;height:2.108px}
+.corners i::after{width:2.108px;height:11.243px}
+.corners .tl{top:0;left:0}.corners .tr{top:0;right:0;transform:scaleX(-1)}
+.corners .bl{bottom:0;left:0;transform:scaleY(-1)}.corners .br{bottom:0;right:0;transform:scale(-1,-1)}
+.intro .corners{left:37.12px;top:177.76px;height:237.48px}
+.done-hero .corners{left:37.12px;top:115px;height:183.49px}
+.screen.play .corners{animation:cornersIn 1.2s var(--ease) .45s backwards}
+@keyframes cornersIn{from{opacity:0;transform:scale(1.14)}to{opacity:1;transform:none}}
+
+/* ---------- type reveal (words rise out of a mask) ---------- */
+.w{display:inline-block;vertical-align:top}
+.wi{display:inline-block;opacity:0;transform:translate3d(0,14px,0)}
+.screen.play .wi{animation:wordUp .95s var(--ease) both;animation-delay:calc(var(--base,200ms) + var(--k,0)*95ms)}
+.screen.play .reveal .wi{animation:none}
+.screen.play .reveal.in .wi{animation:wordUp .95s var(--ease) both;animation-delay:calc(120ms + var(--k,0)*85ms)}
+@keyframes wordUp{from{opacity:0;transform:translate3d(0,14px,0)}to{opacity:1;transform:none}}
+
+/* ---------- glass cards ---------- */
+.screen:not(.intro){background:
+  radial-gradient(420px 320px at 88% 6%,rgba(255,255,255,.08),transparent 70%),
+  radial-gradient(900px 700px at -30% 55%,rgba(255,79,0,.035),transparent 100%),
+  radial-gradient(360px 300px at 100% 92%,rgba(255,255,255,.05),transparent 70%),var(--bg)}
+.card,.month,.later,.zip,.sumcard,.note,.step{
+  background-color:rgba(0,0,0,.28);
+  background-image:linear-gradient(135deg,rgba(255,255,255,.028),rgba(255,255,255,.014) 70%);
+  -webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);
+  border-color:rgba(255,255,255,.09);
+  background-clip:padding-box;box-shadow:none}
+.sumcard,.note,.step{border:1px solid rgba(255,255,255,.09)}
+
+@media (max-width:500px){
+  body{display:block;background:var(--bg)}
+  .device{width:100vw;height:100dvh;border-radius:0;box-shadow:none}
+  .status{display:none}
+  .stage{inset:56px 0 0 0}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important;transition-delay:0ms!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4M10 5l-7 7 7 7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 5l7 7-7 7"/></symbol>
+  <symbol id="i-caret" viewBox="0 0 24 24"><path d="M5 9l7 7 7-7"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21"/></symbol>
+  <symbol id="i-garage" viewBox="0 0 24 24"><path d="M2.5 16v-3l2.5-4.5h8l4.5 4.5 3.5 1V16h-2.2M8.8 16h5.4M4.8 16H2.5"/><circle cx="6.8" cy="16.6" r="1.9"/><circle cx="16.6" cy="16.6" r="1.9"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M2.5 4.5h3l2.2 10.5h10.6l2.2-8H6.6"/><circle cx="9" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2a6.5 6.5 0 0 0-6.5 6.5c0 4.7 6.5 13.5 6.5 13.5s6.5-8.800 6.500-13.500A6.500 6.500 0 0 0 12 2zm0 9a2.500 2.500 0 1 1 0-5 2.500 2.500 0 0 1 0 5z"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.500v15l13-7.500z" fill="currentColor"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z" fill="currentColor"/></symbol>
+</svg>
+
+<div class="device" id="device">
+  <div class="chrome">
+    <div class="status"><span>9:41</span>
+      <span class="sys">
+        <svg width="18" height="12" viewBox="0 0 18 12" fill="#f9f9f9"><rect x="0" y="8" width="3" height="4" rx=".8"/><rect x="5" y="5.500" width="3" height="6.500" rx=".8"/><rect x="10" y="3" width="3" height="9" rx=".8"/><rect x="15" y="0" width="3" height="12" rx=".8"/></svg>
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="none" stroke="#f9f9f9" stroke-width="2" stroke-linecap="round"><path d="M1.500 4.200a10 10 0 0 1 14 0M4 7a6.500 6.500 0 0 1 9 0"/><circle cx="8.500" cy="10" r="1" fill="#f9f9f9" stroke="none"/></svg>
+        <svg width="27" height="13" viewBox="0 0 27 13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3.500" stroke="#f9f9f9" opacity=".5"/><rect x="2" y="2" width="19" height="9" rx="2" fill="#f9f9f9"/><path d="M24.500 4.500v4c.8-.3 1.500-1.100 1.500-2s-.7-1.700-1.500-2z" fill="#f9f9f9" opacity=".6"/></svg>
+      </span>
+    </div>
+    <div class="nav">
+      <img class="logo" src="assets/logo.png" alt="Slate" onerror="this.replaceWith(Object.assign(document.createElement('b'),{textContent:'S',className:'logo-fallback'}))">
+      <div class="btns">
+        <img src="assets/Search.png" width="20" height="20" alt="Search">
+        <img src="assets/Garage.png" width="24" height="24" alt="Garage">
+        <img src="assets/Cart.png" width="24" height="24" alt="Cart">
+        <img src="assets/Menu.png" width="24" height="24" alt="Menu">
+      </div>
+    </div>
+  </div>
+
+  <main class="stage" id="stage">
+    <div class="pbar" id="pbar" aria-hidden="true"><button class="back" data-back aria-label="Back"><svg class="i"><use href="#i-back"/></svg></button><div class="track"><div class="segs"></div><div class="fill" id="pfill"><i></i></div></div><span class="count" id="pcount">1 / 3</span></div>
+
+    <!-- 0 · INTRO -->
+    <section class="screen intro" data-screen="intro">
+      <img class="introgrid" src="assets/grid.png" alt="" aria-hidden="true">
+      <div class="corners" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+      <div data-rise>
+        <p class="eyebrow">Get excited Chris</p>
+        <h1 class="h3" style="margin-top:8px">It’s time to lock<br>in your Slate</h1>
+      </div>
+      <div class="vcard" id="vcard" data-rise>
+        <div class="hero"><div class="vimg"><img src="assets/suv.png" alt="Slate SUV" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div>
+      </div>
+      <div class="sp"></div>
+      <div class="stepper" data-rise>
+        <div class="st-track"><div class="st-fill fill" data-to="34.6"></div><div class="st-dots"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i></div></div>
+        <div class="st-labels"><span style="left:-1px">Preorder</span><span style="left:68px">Arrange delivery</span><span class="off" style="left:177px">Finalize &amp; buy</span><span class="off" style="right:0">Deliver</span></div>
+      </div>
+      <div data-rise style="display:flex;flex-direction:column;gap:5px">
+        <p class="b2"><span class="demi">Lock in your Slate by Dec 6</span></p>
+        <p class="copy">Choose your body style and delivery month before they fill up. Your order window opens in the month you pick.</p>
+      </div>
+      <div data-rise><button class="btn btn-accent" data-go="1">Take the next step <svg class="i"><use href="#i-arrow"/></svg></button></div>
+    </section>
+
+    <!-- 1 · BODY STYLE -->
+    <section class="screen" data-screen="body" hidden>
+      <div class="pspace"></div>
+      <div class="head" data-rise>
+        <h1 class="h4" style="max-width:257px">Confirm your body style</h1>
+        <p class="copy" style="max-width:286px">To ensure your vehicle will be ready by your desired date, let us know what body style you want.</p>
+      </div>
+      <div class="cards" role="radiogroup" aria-label="Body style">
+        <div class="card" role="radio" aria-checked="false" tabindex="0" data-body="Truck">
+          <div class="card-main">
+            <div class="veh" style="top:-18px"><div class="vimg"><img src="assets/truck.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div>
+            <div class="meta"><b>Truck</b><span>Available from February</span></div>
+            <button class="badge" data-toggle aria-expanded="false">Details <svg class="i"><use href="#i-caret"/></svg></button>
+          </div>
+          <div class="det-wrap"><div><div class="det">
+            <div class="spec"><div><span class="lbl">Seats</span><span class="n">2<span class="dots"><i></i><i></i><i class="o"></i><i class="o"></i><i class="o"></i><i class="o"></i></span></span></div><div><span class="lbl">Doors</span><span class="n">4<span class="dots"><i></i><i></i><i></i><i></i></span></span></div></div>
+            <div class="used"><span class="lbl">Used in 3 designs</span><div class="thumbs"><div class="vimg"><img src="assets/Vehicle.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div><div class="vimg"><img src="assets/Vehicle-1.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div><div class="vimg"><img src="assets/Vehicle-2.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div></div>
+          </div></div></div>
+        </div>
+        <div class="card" role="radio" aria-checked="false" tabindex="0" data-body="Squareback">
+          <div class="card-main">
+            <div class="veh" style="top:-22px"><div class="vimg"><img src="assets/truck.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div>
+            <div class="meta"><b>Squareback</b><span>Available from March</span></div>
+            <button class="badge" data-toggle aria-expanded="false">Details <svg class="i"><use href="#i-caret"/></svg></button>
+          </div>
+          <div class="det-wrap"><div><div class="det">
+            <div class="spec"><div><span class="lbl">Seats</span><span class="n">5<span class="dots"><i></i><i></i><i></i><i></i><i></i><i class="o"></i></span></span></div><div><span class="lbl">Doors</span><span class="n">4<span class="dots"><i></i><i></i><i></i><i></i></span></span></div></div>
+            <div class="used"><span class="lbl">Used in 3 designs</span><div class="thumbs"><div class="vimg"><img src="assets/Vehicle.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div><div class="vimg"><img src="assets/Vehicle-1.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div><div class="vimg"><img src="assets/Vehicle-2.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div></div>
+          </div></div></div>
+        </div>
+        <div class="card" role="radio" aria-checked="false" tabindex="0" data-body="Fastback SUV">
+          <div class="card-main">
+            <div class="veh" style="top:-22px"><div class="vimg"><img src="assets/truck.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div>
+            <div class="meta"><b>Fastback SUV</b><span>Available from May</span></div>
+            <button class="badge" data-toggle aria-expanded="false">Details <svg class="i"><use href="#i-caret"/></svg></button>
+          </div>
+          <div class="det-wrap"><div><div class="det">
+            <div class="spec"><div><span class="lbl">Seats</span><span class="n">5<span class="dots"><i></i><i></i><i></i><i></i><i></i><i class="o"></i></span></span></div><div><span class="lbl">Doors</span><span class="n">4<span class="dots"><i></i><i></i><i></i><i></i></span></span></div></div>
+            <div class="used"><span class="lbl">Used in 2 designs</span><div class="thumbs"><div class="vimg"><img src="assets/Vehicle.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div><div class="vimg"><img src="assets/Vehicle-1.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div></div></div>
+          </div></div></div>
+        </div>
+      </div>
+      <div class="actions" data-rise><button class="btn btn-accent" data-next="2" disabled>Next <svg class="i"><use href="#i-arrow"/></svg></button></div>
+    </section>
+
+    <!-- 2 · SHIPPING -->
+    <section class="screen" data-screen="ship" hidden>
+      <div class="pspace"></div>
+      <div class="head" data-rise>
+        <h1 class="h4">Where are we shipping your Slate?</h1>
+        <p class="copy" style="max-width:295px">We use your zip code to show the months open in your state. You can update delivery details at checkout.</p>
+      </div>
+      <div class="section" data-rise>
+        <div class="zip" id="zip">
+          <svg class="i pin"><use href="#i-pin"/></svg>
+          <span class="val" id="zipVal">90026</span>
+          <input id="zipInput" inputmode="numeric" maxlength="5" autocomplete="postal-code" aria-label="Zip code" hidden>
+          <button class="chg" id="zipBtn">Change</button>
+        </div>
+        <p class="hint" id="zipHint">Enter a 5-digit zip code.</p>
+      </div>
+      <div class="actions" data-rise><button class="btn btn-accent" data-next="3" id="shipNext">Next <svg class="i"><use href="#i-arrow"/></svg></button></div>
+    </section>
+
+    <!-- 3 · DELIVERY MONTH -->
+    <section class="screen" data-screen="month" hidden>
+      <div class="pspace"></div>
+      <div class="head" data-rise>
+        <h1 class="h4">Choose your delivery month</h1>
+        <p class="copy">Your delivery month is when your window to order opens. Your delivery date depends on when you order and how much delivery capacity we have then, so it may fall after your month. <a class="link" id="whatMean" role="button" tabindex="0" style="display:inline">What does this mean?</a></p>
+      </div>
+      <div class="months">
+        <button class="month" data-month="April 2027" data-rise><span>April 2027</span><span class="pill y">Nearly sold out</span></button>
+        <button class="month" data-month="May 2027" data-rise><span>May 2027</span><span class="pill b">Filling up</span></button>
+        <button class="month" data-month="June 2027" data-rise><span>June 2027</span><span class="pill g">Available</span></button>
+        <div class="later" id="later" data-rise>
+          <button class="later-head" id="laterHead" aria-expanded="false">Need a later month? <svg class="i"><use href="#i-caret"/></svg></button>
+          <div class="later-body"><div><div class="later-inner">
+            <p class="b2">Tell us the earliest month you’d like your Slate. We’ll invite you when it opens, and you keep your place in line.</p>
+            <label class="sel"><select id="laterSel" aria-label="Later month">
+              <option>July 2027</option><option>August 2027</option><option>September 2027</option><option>October 2027</option><option>November 2027</option><option>December 2027</option>
+            </select><svg class="i"><use href="#i-caret"/></svg></label>
+          </div></div></div>
+        </div>
+      </div>
+      <div class="actions" data-rise><button class="btn btn-accent" data-next="4" disabled>Next <svg class="i"><use href="#i-arrow"/></svg></button></div>
+    </section>
+
+    <!-- 4 · CONFIRMATION -->
+    <section class="screen done" data-screen="done" hidden>
+      <div class="done-hero">
+        <img class="donegrid" src="assets/grid.png" alt="" aria-hidden="true">
+        <h1 class="h2" id="doneHead" data-rise>Get pumped, June is yours!</h1>
+        <div class="corners" aria-hidden="true"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i></div>
+        <div class="done-truck vimg"><img src="assets/hero-truck.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div>
+      </div>
+      <div class="done-body">
+        <div class="sumcard reveal">
+          <div class="st">
+            <div class="st-track"><div class="st-fill fill" data-to="38"></div><div class="st-dots"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i></div></div>
+            <div class="st-labels"><span style="left:-1px">Preorder</span><span style="left:101px">Arrange<br>delivery</span><span class="off" style="left:190px">Finalize<br>&amp; buy</span><span class="off" style="right:0">Deliver</span></div>
+          </div>
+          <div class="rows">
+            <div class="row reveal" style="--d:100ms"><span>Delivery month</span><b id="sMonth">June 2027</b></div>
+            <div class="row reveal" style="--d:180ms"><span>Body style</span><b><span id="sBody" style="color:#fff">Fastback SUV</span><svg class="i"><use href="#i-lock"/></svg></b></div>
+            <div class="row reveal" style="--d:260ms"><span>Delivering to</span><b id="sZip">90026</b></div>
+            <div class="row reveal" style="--d:340ms"><span>Open to change</span><b>Accessories &amp; wraps</b></div>
+          </div>
+        </div>
+        <div class="note reveal"><b>Change your mind?</b><span>You can change your delivery month until December 2.</span></div>
+        <div class="paras reveal">
+          <p class="copy" id="dp1">Your delivery month for your Fastback SUV is June 2027. That’s when your window to order opens. We’ve emailed you a confirmation.</p>
+          <p class="copy">Your delivery date depends on when you order. Order near the end of June, and delivery may land in July.</p>
+        </div>
+      </div>
+      <div class="block reveal" style="margin-top:4px">
+        <h2 class="h4" style="font-stretch:100%">See how it all works</h2>
+        <div class="video" id="video" role="button" tabindex="0" aria-label="Play video">
+          <div class="vimg"><img src="assets/video.png" alt="" onerror="this.closest('.vimg').classList.add('missing');this.remove()"></div>
+          <div class="vplay"><svg class="i pl"><use href="#i-play"/></svg><svg class="i pa"><use href="#i-pause"/></svg></div>
+          <div class="ts"><svg class="i"><use href="#i-play"/></svg><span id="vTime">3:30</span></div>
+          <div class="vprog" id="vProg"></div>
+        </div>
+      </div>
+      <div class="block">
+        <h2 class="h4 reveal" style="font-stretch:100%;margin-bottom:16px">What happens next</h2>
+        <div class="steps">
+          <div class="step reveal"><b>1</b><div class="tx"><h3>Make it yours</h3><p class="copy">Keep designing your Slate until it’s just right.</p><button class="btn btn-accent btn-sm" id="designBtn">Continue to design yours <svg class="i"><use href="#i-arrow"/></svg></button><p class="copy">Changing your body style later may change which months are open to you.</p></div></div>
+          <div class="step reveal" style="--d:80ms"><b>2</b><div class="tx"><h3 id="orderIn">Order in June</h3><p class="copy">We’ll email your invitation to order. You’ll have 14 days to place your order.</p></div></div>
+          <div class="step reveal" style="--d:160ms"><b>3</b><div class="tx"><h3>Delivery</h3><p class="copy" id="delCopy">Once you’ve ordered and your Slate is ready, pick it up or have it delivered. Timing depends on when you order and our delivery capacity, so it may fall after June.</p></div></div>
+        </div>
+        <button class="btn btn-dark reveal" id="restart">Back to my Slate</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="How delivery months work">
+    <div class="grab"></div>
+    <h3>How delivery months work</h3>
+    <p>The month you pick is when your window to order opens — not a guaranteed delivery date.</p>
+    <p>Your delivery date depends on when you place your order and how much delivery capacity we have at that time, so it may land after your month.</p>
+    <button class="btn btn-accent" id="sheetClose">Got it</button>
+  </div>
+  <div class="toast" id="toast">Prototype end — this would open the Slate configurator.</div>
+</div>
+
+<script>
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const EASE = 'cubic-bezier(.22,1,.36,1)';
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const order = ['intro', 'body', 'ship', 'month', 'done'];
+  const PROGRESS = { intro: 0, body: 30, ship: 60, month: 100, done: 0 };
+  const screens = Object.fromEntries($$('.screen').map(s => [s.dataset.screen, s]));
+  const state = { idx: 0, body: null, month: null, zip: '90026' };
+  let busy = false;
+
+  // stagger index for entrance choreography
+  Object.values(screens).forEach(s => $$('[data-rise]', s).forEach((el, i) => el.style.setProperty('--i', i)));
+
+  /* ---------- navigation ---------- */
+  function go(i) {
+    if (busy || i === state.idx || i < 0 || i >= order.length) return;
+    const dir = i > state.idx ? 1 : -1;
+    const fromName = order[state.idx], toName = order[i];
+    const from = screens[fromName], to = screens[toName];
+    const prevP = PROGRESS[fromName];
+    busy = true;
+
+    to.hidden = false; to.scrollTop = 0; assignLines(to);
+    to.classList.remove('play'); void to.offsetWidth; to.classList.add('play');
+
+    const dur = reduce ? 1 : 600;
+    const inA = to.animate(
+      [{ opacity: 0, transform: `translate3d(${dir * 56}px,0,0) scale(.985)` }, { opacity: 1, transform: 'none' }],
+      { duration: dur, easing: EASE, fill: 'both' });
+    const outA = from.animate(
+      [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translate3d(${-dir * 36}px,0,0) scale(.99)` }],
+      { duration: dur * .6, easing: 'cubic-bezier(.4,0,1,1)', fill: 'both' });
+    from.style.pointerEvents = 'none';
+    outA.onfinish = () => { from.hidden = true; outA.cancel(); from.style.pointerEvents = ''; };
+    inA.onfinish = () => { inA.cancel(); busy = false; };
+
+    state.idx = i;
+    setBar(toName);
+    if (toName === 'done') enterDone();
+    if (fromName === 'done') stopVideo();
+    if (toName === 'ship') cancelZipEdit();
+    document.activeElement && document.activeElement.blur();
+  }
+
+  /* ---------- shared progress bar (stays put between screens, only the fill moves) ---------- */
+  const pbar = $('#pbar'), pfill = $('#pfill'), pcount = $('#pcount');
+  const barW = p => { const n = Math.round(p * .8); return n ? ((n - 1) * 1.25 + .534) * .974 : 0; };  // N of 80 ticks lit
+  const STEPN = { body: 1, ship: 2, month: 3 };
+  let barHide = 0;
+  function setBar(name) {
+    const p = PROGRESS[name], inner = pfill.firstElementChild, segs = $('.segs', pbar);
+    clearTimeout(barHide);
+    if (!p) {
+      pbar.classList.remove('on');
+      barHide = setTimeout(() => { pfill.style.transition = 'none'; pfill.style.width = '0%'; }, 500);
+      return;
+    }
+    const first = !pbar.classList.contains('on');
+    inner.style.width = segs.offsetWidth + 'px';
+    pbar.classList.add('on');
+    const txt = STEPN[name] + ' / 3';
+    if (pcount.textContent !== txt) { pcount.textContent = txt; pcount.classList.remove('tick'); void pcount.offsetWidth; pcount.classList.add('tick'); }
+    pfill.style.transition = `width 900ms ${EASE} ${first ? 260 : 0}ms`;
+    pfill.style.width = barW(p) + '%';
+  }
+
+  function animateFills(screen, fromP) {
+    $$('.fill[data-to]', screen).forEach(f => {
+      const w = p => { const n = Math.round(p * .8); return n ? ((n - 1) * 1.25 + .534) * .974 : 0; };  // N of 80 ticks lit
+      const to = f.closest('.pbar') ? w(+f.dataset.to) : +f.dataset.to, from = f.closest('.pbar') ? w(f.dataset.auto ? fromP : 0) : (f.dataset.auto ? fromP : 0);
+      const inner = f.querySelector('i'), segs = f.parentElement.querySelector('.segs');
+      if (inner && segs) inner.style.width = segs.offsetWidth + 'px';  // keep the tick pattern fixed while the clip grows
+      f.style.transition = 'none'; f.style.width = from + '%'; void f.offsetWidth;
+      f.style.transition = `width 1000ms ${EASE} 260ms`; f.style.width = to + '%';
+    });
+  }
+
+  document.addEventListener('click', e => {
+    const g = e.target.closest('[data-go]'); if (g) return go(+g.dataset.go);
+    const b = e.target.closest('[data-back]'); if (b) return go(state.idx - 1);
+    const n = e.target.closest('[data-next]');
+    if (n && !n.disabled) {
+      if (n.id === 'shipNext' && !commitZip()) return;
+      go(+n.dataset.next);
+    }
+  });
+
+  /* ---------- helpers ---------- */
+  function setBtn(screenName, enabled) {
+    const btn = $('[data-next]', screens[screenName]);
+    if (!btn || btn.disabled === !enabled) return;
+    btn.disabled = !enabled;
+    if (enabled && !reduce) {
+      btn.classList.remove('pop', 'sheen'); void btn.offsetWidth;
+      btn.classList.add('pop', 'sheen');
+      setTimeout(() => btn.classList.remove('pop', 'sheen'), 1200);
+    }
+  }
+  function pop(el) {
+    if (reduce) return;
+    el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.025)', offset: .4 }, { transform: 'scale(1)' }], { duration: 520, easing: EASE });
+  }
+
+  /* ---------- hero parallax on intro card ---------- */
+  const vcard = $('#vcard'), hero = $('.hero', vcard);
+  vcard.addEventListener('pointermove', e => {
+    if (reduce) return;
+    const r = vcard.getBoundingClientRect();
+    const nx = (e.clientX - r.left) / r.width - .5, ny = (e.clientY - r.top) / r.height - .5;
+    hero.style.setProperty('--tx', (nx * 18) + 'px'); hero.style.setProperty('--ty', (ny * 8) + 'px'); hero.style.setProperty('--ry', (nx * 8) + 'deg');
+  });
+  vcard.addEventListener('pointerleave', () => { ['--tx', '--ty', '--ry'].forEach(p => hero.style.removeProperty(p)); });
+
+  /* ---------- body style ---------- */
+  const cards = $$('.card');
+  function setOpen(card, open) {
+    card.classList.toggle('open', open);
+    const t = $('[data-toggle]', card); if (t) t.setAttribute('aria-expanded', open);
+  }
+  function selectBody(card) {
+    state.body = card.dataset.body;
+    cards.forEach(c => {
+      const on = c === card;
+      c.classList.toggle('selected', on); c.setAttribute('aria-checked', on);
+    });
+    pop(card); setBtn('body', true);
+  }
+  cards.forEach(card => {
+    card.addEventListener('click', e => {
+      const t = e.target.closest('[data-toggle]');
+      if (t) {
+        e.stopPropagation();
+        if (!card.classList.contains('selected')) selectBody(card);
+        setOpen(card, !card.classList.contains('open'));
+        return;
+      }
+      if (e.target.closest('.thumbs')) return;
+      selectBody(card);
+    });
+    card.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === card) { e.preventDefault(); selectBody(card); } });
+  });
+  new MutationObserver(() => {
+    if (document.querySelector('[data-screen="body"]').hidden) return;
+    cards.forEach(c => { const on = c.dataset.body === state.body; c.classList.toggle('selected', on); c.setAttribute('aria-checked', on); if (!on) setOpen(c, false); });
+    setBtn('body', !!state.body);
+  }).observe(document.querySelector('[data-screen="body"]'), { attributes: true, attributeFilter: ['hidden'] });
+
+  /* ---------- sticky action bar: only show bg + stroke when content scrolls under it ---------- */
+  function updateActions() {
+    const cur = $$('.screen').find(x => !x.hidden); if (cur) pbar.classList.toggle('stuck', cur.scrollTop > 2);
+    $$('.screen').forEach(sc => {
+      if (sc.hidden) return;
+      const bar = $('.actions', sc); if (!bar) return;
+      const prev = bar.previousElementSibling; if (!prev) return;
+      const over = prev.getBoundingClientRect().bottom > bar.getBoundingClientRect().top + 1;
+      bar.classList.toggle('stuck', over);
+    });
+  }
+  $$('.screen').forEach(sc => sc.addEventListener('scroll', updateActions, { passive: true }));
+  window.addEventListener('resize', updateActions);
+  setInterval(updateActions, 200);
+
+  /* ---------- zip ---------- */
+  const zip = $('#zip'), zipVal = $('#zipVal'), zipInput = $('#zipInput'), zipBtn = $('#zipBtn');
+  function startZipEdit() {
+    zip.classList.add('editing'); zipVal.hidden = true; zipInput.hidden = false; zipInput.value = state.zip;
+    zipBtn.textContent = 'Save'; zipInput.focus(); zipInput.select();
+  }
+  function cancelZipEdit() {
+    zip.classList.remove('editing', 'err'); zipVal.hidden = false; zipInput.hidden = true; zipBtn.textContent = 'Change';
+  }
+  function commitZip() {
+    if (zipInput.hidden) return true;
+    if (!/^\d{5}$/.test(zipInput.value)) {
+      zip.classList.remove('err'); void zip.offsetWidth; zip.classList.add('err'); zipInput.focus(); return false;
+    }
+    state.zip = zipInput.value; zipVal.textContent = state.zip; cancelZipEdit();
+    pop(zip); return true;
+  }
+  zipBtn.addEventListener('click', () => zipInput.hidden ? startZipEdit() : commitZip());
+  zipInput.addEventListener('input', () => { zipInput.value = zipInput.value.replace(/\D/g, '').slice(0, 5); zip.classList.remove('err'); });
+  zipInput.addEventListener('keydown', e => { if (e.key === 'Enter') commitZip(); if (e.key === 'Escape') cancelZipEdit(); });
+
+  /* ---------- delivery month ---------- */
+  const monthBtns = $$('.month'), later = $('#later'), laterHead = $('#laterHead'), laterSel = $('#laterSel');
+  function pickMonth(m, el) {
+    state.month = m;
+    monthBtns.forEach(b => b.classList.toggle('selected', b === el));
+    if (el) pop(el);
+    setBtn('month', true);
+  }
+  monthBtns.forEach(b => b.addEventListener('click', () => pickMonth(b.dataset.month, b)));
+  laterHead.addEventListener('click', () => {
+    const open = !later.classList.contains('open');
+    later.classList.toggle('open', open); laterHead.setAttribute('aria-expanded', open);
+    if (open) pickMonth(laterSel.value, null);
+  });
+  laterSel.addEventListener('change', () => pickMonth(laterSel.value, null));
+
+  const open = () => { $('#device').classList.add('sheet-open'); };
+  const close = () => { $('#device').classList.remove('sheet-open'); };
+  $('#whatMean').addEventListener('click', open);
+  $('#whatMean').addEventListener('keydown', e => { if (e.key === 'Enter') open(); });
+  $('#scrim').addEventListener('click', close); $('#sheetClose').addEventListener('click', close);
+  addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  /* ---------- confirmation ---------- */
+  const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } }),
+    { root: screens.done, threshold: .12 });
+  function enterDone() {
+    const body = state.body || 'Fastback SUV', month = state.month || 'June 2027';
+    const mName = month.split(' ')[0];
+    $('#doneHead').textContent = `Get pumped, ${mName} is yours!`;
+    $('#sMonth').textContent = month; $('#sBody').textContent = body; $('#sZip').textContent = state.zip;
+    $('#dp1').textContent = `Your delivery month for your ${body} is ${month}. That’s when your window to order opens. We’ve emailed you a confirmation.`;
+    $('#orderIn').textContent = `Order in ${mName}`;
+    $('#delCopy').textContent = `Once you’ve ordered and your Slate is ready, pick it up or have it delivered. Timing depends on when you order and our delivery capacity, so it may fall after ${mName}.`;
+    splitType(screens.done); assignLines(screens.done);
+    $$('.reveal', screens.done).forEach(el => { el.classList.remove('in'); io.unobserve(el); io.observe(el); });
+  }
+  $('#restart').addEventListener('click', () => { state.body = null; state.month = null;
+    cards.forEach(c => { c.classList.remove('selected', 'open'); c.setAttribute('aria-checked', 'false'); });
+    monthBtns.forEach(b => b.classList.remove('selected')); later.classList.remove('open');
+    ['body', 'month'].forEach(n => { const b = $('[data-next]', screens[n]); b.disabled = true; });
+    go(0); });
+
+  /* video demo */
+  const video = $('#video'), vTime = $('#vTime'), vProg = $('#vProg'); const TOTAL = 210; let elapsed = 0, timer = null;
+  const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  function tick() { elapsed = Math.min(TOTAL, elapsed + .25); vProg.style.width = (elapsed / TOTAL * 100) + '%'; vTime.textContent = fmt(TOTAL - elapsed); if (elapsed >= TOTAL) stopVideo(); }
+  function startVideo() { video.classList.add('playing'); timer = setInterval(tick, 250); }
+  function stopVideo() { video.classList.remove('playing'); clearInterval(timer); timer = null; }
+  video.addEventListener('click', () => timer ? stopVideo() : startVideo());
+  video.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); video.click(); } });
+
+  /* toast */
+  let tt; $('#designBtn').addEventListener('click', () => { const t = $('#toast'); t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2400); });
+
+  /* ---------- boot ---------- */
+  /* ---------- type reveal: split copy into words (hidden until the screen plays) ---------- */
+  const TYPE_SEL = '.eyebrow,.h2,.h3,.h4,.copy,.b2,.count,.st-labels>span,.meta b,.meta>span,.month>span,.later-head,.later-inner p,.row>span,.row b,.note b,.note>span,.step b,.step h3,.btn,.outline,.zip .val,.badge';
+  function splitType(root) {
+    $$(TYPE_SEL, root).forEach(el => {
+      if (el.matches('.w,.wi,.wtx') || el.querySelector('.w')) return;
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), nodes = [];
+      while (walker.nextNode()) nodes.push(walker.currentNode);
+      let k = 0;
+      nodes.forEach(n => {
+        if (!n.nodeValue.trim() || n.parentElement.closest('.link,.chg')) return;
+        const frag = document.createDocumentFragment();
+        n.nodeValue.split(/(\s+)/).forEach(part => {
+          if (!part) return;
+          if (/^\s+$/.test(part)) { frag.append(part); return; }
+          const w = document.createElement('span'), i = document.createElement('span');
+          w.className = 'w'; i.className = 'wi'; i.textContent = part; i.style.setProperty('--k', k++);
+          w.append(i); frag.append(w);
+        });
+        // inside flex rows (buttons, badges…) keep the words together as ONE flex item so gaps don't land between words
+        if (getComputedStyle(n.parentElement).display.includes('flex')) { const tx = document.createElement('span'); tx.className = 'wtx'; tx.append(frag); n.replaceWith(tx); }
+        else n.replaceWith(frag);
+      });
+      const host = el.closest('[data-rise]'), idx = host ? (+host.style.getPropertyValue('--i') || 0) : 0;
+      el.style.setProperty('--base', (220 + idx * 70) + 'ms');
+    });
+  }
+  // words on the same visual line share a line index, so each LINE animates as one unit
+  function assignLines(root) {
+    $$(TYPE_SEL, root).forEach(el => {
+      let line = -1, lastTop = -9999;
+      $$('.w', el).forEach(w => {
+        const t = w.getBoundingClientRect().top;
+        if (Math.abs(t - lastTop) > 4) { line++; lastTop = t; }
+        w.firstElementChild.style.setProperty('--k', line);
+      });
+    });
+  }
+  Object.values(screens).forEach(splitType);
+
+  function startIntro() { assignLines(screens.intro); screens.intro.classList.add('play'); animateFills(screens.intro, 0); }
+  // allow deep-linking while reviewing:  index.html#body | #ship | #month | #done 
+  const h = location.hash.slice(1);
+  if (order.includes(h) && h !== 'intro') { state.idx = order.indexOf(h); Object.values(screens).forEach(s => s.hidden = true); screens[h].hidden = false; assignLines(screens[h]); screens[h].classList.add('play'); setBar(h); if (h === 'done') enterDone(); }
+  else startIntro();
+})();
+</script>
+</body>
+</html>
